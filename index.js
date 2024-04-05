@@ -10,7 +10,7 @@ var mongoose = require('mongoose');
 var express = require('express');
 var app = express();
 
-mongoose.connect('mongodb+srv://kenivancheng:WBBcz7ZrU6WTgEU6@cluster0.tkhfcoa.mongodb.net/apdevDB?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect('mongodb://localhost/apdevDB');
 
 app.use('/stylesheets', express.static(__dirname + '/stylesheets'));
 app.use('/images', express.static(__dirname + '/images'));
@@ -130,9 +130,6 @@ app.post('/submit-login', async function(req, res) {
     if (user && user.password === password) {
         loggedIn = username;
         if (remember) {
-            if (req.session.username) {
-                req.session.destroy();
-            }
             req.session.username = username;
             console.log('sessionUsername: ' + req.session.username)
         }
