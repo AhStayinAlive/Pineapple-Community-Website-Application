@@ -127,7 +127,6 @@ app.post('/submit-login', async function(req, res) {
     var user = await User.findOne({ username: username });
 
     if (user && user.password === password) {
-        req.session.username = username;
         if (remember) {
             req.session.username = username;
             console.log('sessionUsername: ' + req.session.username)
