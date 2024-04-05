@@ -130,6 +130,9 @@ app.post('/submit-login', async function(req, res) {
         if (remember) {
             req.session.username = username;
             console.log('sessionUsername: ' + req.session.username)
+        } else {
+            req.session.username = username;
+            req.session.cookie.expires = false;
         }
         res.redirect('/home');
     } else {
