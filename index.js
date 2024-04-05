@@ -10,7 +10,7 @@ var mongoose = require('mongoose');
 var express = require('express');
 var app = express();
 
-mongoose.connect('mongodb+srv://kenivancheng:WBBcz7ZrU6WTgEU6@cluster0.tkhfcoa.mongodb.net/apdevDB?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect('mongodb://localhost/apdevDB');
 
 app.use('/stylesheets', express.static(__dirname + '/stylesheets'));
 app.use('/images', express.static(__dirname + '/images'));
@@ -114,21 +114,20 @@ app.use(
             maxAge: 3 * 7 * 24 * 60 * 60 * 1000
         },
         store: MongoStore.create({ 
-            mongoUrl: 'mongodb+srv://kenivancheng:WBBcz7ZrU6WTgEU6@cluster0.tkhfcoa.mongodb.net/apdevDB?retryWrites=true&w=majority&appName=Cluster0',
+            mongoUrl: 'mongodb://localhost/apdevDB',
             collectionName: 'sessions' 
         })
     })
 );
 
-// Set loggedIn value after logging in
-var loggedIn;
+// Set req.session.username value after logging in
 app.post('/submit-login', async function(req, res) {
     var { username, password, remember } = req.body;
 
     var user = await User.findOne({ username: username });
 
     if (user && user.password === password) {
-        loggedIn = username;
+        req.session.username = username;
         if (remember) {
             req.session.username = username;
             console.log('sessionUsername: ' + req.session.username)
@@ -142,7 +141,7 @@ app.post('/submit-login', async function(req, res) {
 app.get('/', async function(req, res) { // !!
     console.log('working: ' + req.session.username);
     if (req.session.username) {
-        loggedIn = req.session.username;
+        req.session.username = req.session.username;
         res.redirect('/home');
     } else {
         res.render('index');
@@ -171,7 +170,7 @@ app.post('/submit-post', async function(req, res) {
     await Post.create({
         postId: newPostId,
         date: formattedDate,
-        user: loggedIn,
+        user: req.session.username,
         upvotes: [],
         downvotes: [],
         edited: 0,
@@ -227,7 +226,7 @@ app.post('/submit-comment', async function(req, res) {
     await Comment.create({
         commentId: newCommentId,
         date: formattedDate,
-        user: loggedIn,
+        user: req.session.username,
         postId: postId,
         parentId: parentId,
         level: level, 
@@ -324,7 +323,7 @@ app.get('/delete', async function(req, res) {
 
 app.get('/home', async function(req,res) {
     var posts = await Post.find({})
-    var user = await User.findOne({ username: loggedIn })
+    var user = await User.findOne({ username: req.session.username })
     console.log(user)
     res.render('home', { posts, user })
 });
@@ -338,13 +337,13 @@ app.get('/post', async function(req, res) {
     // Sort comments
     comments = sortComments(comments);
 
-    var user = await User.findOne({ username: loggedIn })
+    var user = await User.findOne({ username: req.session.username })
     res.render('post', { post, comments, user })
 });
 
 app.get('/create-post', async function(req, res) {
     var communities = await Community.find({})
-    var user = await User.findOne({ username: loggedIn })
+    var user = await User.findOne({ username: req.session.username })
     res.render('create-post', { communities, user })
 });
 
@@ -353,7 +352,7 @@ app.get('/profile', async function(req, res) {
     if (req.query.username) {
         username = req.query.username
     } else {
-        username = loggedIn
+        username = req.session.username
     }
     console.log('username: ' + username)
     var posts = await Post.find({ user: username })
@@ -368,7 +367,7 @@ app.get('/community', async function(req, res) {
 
     var community = await Community.findOne({ name: communityName})
     var posts = await Post.find({ community: communityName })
-    var user = await User.findOne({ username: loggedIn })
+    var user = await User.findOne({ username: req.session.username })
 
     console.log('community: ' + community, 'posts: ' + posts)
 
@@ -376,7 +375,7 @@ app.get('/community', async function(req, res) {
 });
 
 app.get('/edit-profile', async function(req, res) {
-    var user = await User.findOne({ username: loggedIn })
+    var user = await User.findOne({ username: req.session.username })
     res.render('edit-profile', { user })
 });
 
