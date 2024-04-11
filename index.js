@@ -120,7 +120,7 @@ app.use(
     })
 );
 
-// Set req.session.username value after logging in
+// Set username value after logging in
 app.post('/submit-login', async function(req, res) {
     var { username, password, remember } = req.body;
 
@@ -140,8 +140,7 @@ app.post('/submit-login', async function(req, res) {
     }
 });
 
-app.get('/', async function(req, res) { // !!
-    console.log('working: ' + req.session.username);
+app.get('/', async function(req, res) {
     if (req.session.username) {
         req.session.username = req.session.username;
         res.redirect('/home');
@@ -317,6 +316,27 @@ app.get('/delete', async function(req, res) {
     }
 });
 
+// Edit profile
+app.post('/submit-edit-profile', async function(req, res) {
+    var username = req.session.username
+    var updates = {}
+
+    if (req.files && req.files.image) {
+        var { image } = req.files
+        await image.mv(path.resolve(__dirname, 'images', image.name));
+        updates.img = image.name
+    }
+
+    if (req.body.description) {
+        updates.description = req.body.description
+    }
+
+    await User.findOneAndUpdate({ username: username }, updates)
+
+    res.redirect('/profile');
+});
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Render stuff 
@@ -349,7 +369,7 @@ app.get('/create-post', async function(req, res) {
     res.render('create-post', { communities, user })
 });
 
-app.get('/profile', async function(req, res) {
+app.get('/profile', async function(req, res) { // !!
     var username
     if (req.query.username) {
         username = req.query.username
