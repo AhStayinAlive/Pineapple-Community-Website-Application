@@ -45,17 +45,17 @@
             <div class="general-container">
                 <h2 class="edit-header">Edit Profile</h2>
                 <div class="flex edit-container">
-                    <form class="no-margin" action="" method="post" enctype="multipart/form-data">
+                    <form class="no-margin" action="/submit-edit-profile" method="post" enctype="multipart/form-data">
                         <div>
                             <label>Photo</label>
                             <div class="flex pfp-container">
                                 <img id="current-pfp" class="current-pfp" src="images/{{ user.img }}" />
                                 <label for="pfp-uploader" class="button pfp-uploader-label">Upload image</label>
-                                <input type="file" id="pfp-uploader" accept="image/*" />
+                                <input name="image" type="file" id="pfp-uploader" accept="image/*" />
                             </div>
                             
                             <label>Description</label><br />
-                            <textarea id="description" rows="4">{{ user.description }}</textarea><br />
+                            <textarea id="description" rows="4" name="description">{{ user.description }}</textarea><br />
                             <button class="button save-edit no-padding"><a href="profile"><span class="material-symbols-outlined">save</span></a></button>
                         </div>
                     </form>
@@ -64,15 +64,17 @@
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <script>
-            $('#pfp-uploader').on('change', function(event) {
-                var file = event.target.files[0];
-                var reader = new FileReader();
+            $(document).ready(function() {
+                $('#pfp-uploader').on('change', function(event) {
+                    var file = event.target.files[0];
+                    var reader = new FileReader();
 
-                reader.onload = function(e) {
-                    $('.new-pfp').attr('src', e.target.result);
-                };
+                    reader.onload = function(e) {
+                        $('#current-pfp').attr('src', e.target.result);
+                    };
 
-                reader.readAsDataURL(file);
+                    reader.readAsDataURL(file);
+                });
             });
         </script>
     </body>
