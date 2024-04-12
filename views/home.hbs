@@ -158,6 +158,14 @@
                 $('#search').on('input', filterPosts);
                 $('#community-filter').on('change', filterPosts);
             });
+
+            $(document).ready(function() {
+                var username = $('#username').text(); 
+                
+                if (username === '!!') {
+                    $('#username').text('Guest');
+                }
+            });
         </script>
     </body>
 </html>

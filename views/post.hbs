@@ -335,20 +335,28 @@
 
         
         $(document).ready(function() {
-            var commentUsername = $('#comment-username').text(); // Get the text content of the span with id "comment-username"
-            var upvoteData = $('#upvote-button').attr('upvote-data'); // Get the value of the "upvote-data" attribute of the upvote button
+            var commentUsername = $('#comment-username').text(); 
+            var upvoteData = $('#upvote-button').attr('upvote-data'); 
 
             if (upvoteData.includes(commentUsername)) {
-                $('#upvote-button').removeClass('vote-button').addClass('voted-button'); // Change class to "voted-button"
+                $('#upvote-button').removeClass('vote-button').addClass('voted-button');
             }
         });
 
         $(document).ready(function() {
-            var commentUsername = $('#comment-username').text(); // Get the text content of the span with id "comment-username"
-            var downvoteData = $('#downvote-button').attr('downvote-data'); // Get the value of the "upvote-data" attribute of the upvote button
+            var commentUsername = $('#comment-username').text(); 
+            var downvoteData = $('#downvote-button').attr('downvote-data'); 
 
             if (downvoteData.includes(commentUsername)) {
-                $('#downvote-button').removeClass('vote-button').addClass('voted-button'); // Change class to "voted-button"
+                $('#downvote-button').removeClass('vote-button').addClass('voted-button'); 
+            }
+        });
+
+        $(document).ready(function() {
+            var commentDesc = $('.comment-desc').text(); 
+            
+            if (commentDesc === 'Comment as !!') {
+                $('.comment-desc').text('Cannot comment as Guest');
             }
         });
     </script>
