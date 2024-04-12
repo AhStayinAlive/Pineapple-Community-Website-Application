@@ -169,6 +169,23 @@ body {
     cursor: pointer;
 }
 
+.voted-button {
+    background: none;
+    border: none;
+    border-radius: 10px;
+    color: var(--white);
+    width: fit-content;
+    height: fit-content;
+    padding: 5px;
+    margin: 5px;
+    color: #1ED760;
+}
+.voted-button:hover {
+    background-color: var(--light);
+    color: #1ED760;
+    cursor: pointer;
+}
+
 .comments {
     margin-top: 20px;
 	font-size: 15px;

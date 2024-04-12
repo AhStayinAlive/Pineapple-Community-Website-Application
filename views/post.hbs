@@ -21,13 +21,6 @@
         </div>
 
         <div class="actions-container">
-            <div class="search-bar">
-                <form>
-                    <input class="search" type="text" name="search" placeholder="Search"/>
-                    <button type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
-                </form>
-            </div>
-            
             <div class="action-buttons">
                 <ul class="actions">
                     <li class="profile">
@@ -46,7 +39,7 @@
         <div id="post" class="post">
             <div class="username-wrapper">
                 <div class="username">
-                    <a class="post-community" href="community.html">{{ post.community }}</a>
+                    <a class="post-community" href="community?community={{ removeFirst post.community }}">{{ post.community }}</a>
                     <p class="posted no-margin">
                         Posted by <a class="post-user" href="profile?username={{ post.user }}">{{ post.user }}</a> on {{ post.date }} 
                         <span class="edited">{{ edited post.edited }}</span>
@@ -62,10 +55,11 @@
                 </div>
             </div>
             <div class="icons">
-                <div class="icons background">
-                    <button class="vote-button no-padding"><span class="material-symbols-outlined">arrow_upward</span></button>
+                <div class="icons background"> 
+                    {{!-- !! --}}
+                    <a href="/upvote?postId={{ post.postId }}"><button class="vote-button no-padding" upvote-data="{{ upvotes post.upvotes user.username }}" id="upvote-button"><span class="material-symbols-outlined">arrow_upward</span></button></a>
                     <h4 class="vote no-margin">{{ calculateVotes post.upvotes post.downvotes }}</h4>
-                    <button class="vote-button no-padding"><span class="material-symbols-outlined">arrow_downward</span></button>
+                    <a href="/downvote?postId={{ post.postId }}"><button class="vote-button no-padding" downvote-data="{{ downvotes post.downvotes user.username }}" id="downvote-button"><span class="material-symbols-outlined">arrow_downward</span></button></a>
                 </div>
 
                 <div class="icons background">
@@ -297,7 +291,7 @@
             editCommentButton.on('click', function() {
                 var commentContent = $(this).closest('.other-comment').find('.comment-content').text();
 
-                var commentId = $(this).data('commentid'); // !! Might break, lowercase is necessary for now
+                var commentId = $(this).data('commentid'); 
 
                 var editTextarea = $('.edit-textarea');
                 var form = $(this).closest('.other-comment').find('.reply-textarea');
@@ -337,6 +331,25 @@
                     $(this).addClass('deleted');
                 }
             });
+        });
+
+        
+        $(document).ready(function() {
+            var commentUsername = $('#comment-username').text(); // Get the text content of the span with id "comment-username"
+            var upvoteData = $('#upvote-button').attr('upvote-data'); // Get the value of the "upvote-data" attribute of the upvote button
+
+            if (upvoteData.includes(commentUsername)) {
+                $('#upvote-button').removeClass('vote-button').addClass('voted-button'); // Change class to "voted-button"
+            }
+        });
+
+        $(document).ready(function() {
+            var commentUsername = $('#comment-username').text(); // Get the text content of the span with id "comment-username"
+            var downvoteData = $('#downvote-button').attr('downvote-data'); // Get the value of the "upvote-data" attribute of the upvote button
+
+            if (downvoteData.includes(commentUsername)) {
+                $('#downvote-button').removeClass('vote-button').addClass('voted-button'); // Change class to "voted-button"
+            }
         });
     </script>
 </body>

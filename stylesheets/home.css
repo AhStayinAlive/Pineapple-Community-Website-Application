@@ -336,7 +336,7 @@ input {
 }
 .post-text {
     padding: 10px;
-    padding-left: 0;
+
 }
 
 .small {
@@ -398,4 +398,15 @@ input {
 
 .create-button:hover {
     opacity: 0.7;
+}
+
+select {
+    background-color: var(--secondary);
+    border-color: var(--border);
+    color: var(--contrast);
+    padding: 5px;
+    border-radius: 10px;
+}
+select option:hover {
+    background-color: var(--accent);
 }

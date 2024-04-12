@@ -137,3 +137,8 @@ form>button {
 .actions>li {
     border-radius: 100%;
 }
+
+#community-filter {
+    align-self: center;
+    margin-right: 30px;
+}

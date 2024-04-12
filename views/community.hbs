@@ -1,4 +1,3 @@
-<!-- community.html -->
 <html>
     <head>
         <title>Community | Pineapple</title>
@@ -22,16 +21,15 @@
 
             <div class="actions-container">
                 <div class="search-bar">
-                    <form>
-                        <input class="search" type="text" name="search" placeholder="Search"/>
-                        <button type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
+                    <form class="search">
+                        <input id="search" type="text" name="search" placeholder="Search"/>
                     </form>
                 </div>
                 
                 <div class="action-buttons">
                     <ul class="actions">
                         <li class="profile">
-                            <a href="profile.html">
+                            <a href="profile">
                                 <span class="material-symbols-outlined">
                                     person
                                 </span>
@@ -70,29 +68,18 @@
                 {{#each (reverse posts)}}
                 <div class='flex post-container'>
                     <div class='flex post-content'>
-                        <div class='flex column no-padding margin'>
-                            <button class='button'><span class='material-symbols-outlined'>arrow_upward</span></button>
-                            <p class='flex center no-margin'>{{calculateVotes upvotes downvotes}}</p>
-                            <button class='button'><span class='material-symbols-outlined'>arrow_downward</span></button>
-                        </div>
                         <div class='post-text nobottom'>
                             <div class='flex post-info'>
-                                <span class='material-symbols-outlined community-image'>image</span>
                                 <span class='community'>{{community}} •</span>
                                 <span class='small'>by <a class='post-user' href='profile?username={{user}}'>{{user}}</a> on {{date}}</span>
                             </div>
                             <a href='post?postId={{postId}}'><h2 class='post-title {{postId}} margin no-sides nobottom'>{{title}}</h2></a>
-                            <p class='light'>{{content}}</p>
+                            <p class='light post-description'>{{content}}</p>
 
                             <div class='flex no-padding'>
                                 <div class='flex'>
                                     <a class='post-title' href='post?postId={{postId}}'><button class='button sides'><span class='material-symbols-outlined'>mode_comment</span>Comment</button></a>
                                 </div>
-
-                                {{!-- {{#if (eq post.user username)}}
-                                    <a href='edit-post.html'><button class='button sides'><span class='material-symbols-outlined'>edit</span>Edit</button></a>
-                                    <button class='button sides'><span class='material-symbols-outlined'>delete</span>Delete</button>
-                                {{/if}} --}}
                             </div>
                         </div>
                     </div>
@@ -109,7 +96,7 @@
                     <p class="community-description">{{ community.description }}</p>
                 </div>
                 
-                <a href="create-post.html">
+                <a href="create-post">
                     <button class="create-button">
                         <span class="material-symbols-outlined">
                             add
@@ -126,6 +113,29 @@
             } else {
                 $('#nothing').hide();
             }
+
+            $(document).ready(function() {
+                $('.search').on('keydown', function(event) {
+                    if (event.which === 13) {
+                    event.preventDefault();
+                    }
+                });
+            });
+
+            $(document).ready(function() {
+                $('#search').on('input', function() {
+                    var searchText = $(this).val().toLowerCase();
+                    $('.flex.post-container').each(function() {
+                    var title = $(this).find('.post-title').text().toLowerCase().replace(/[^\w\s]/g, '');;
+                    var description = $(this).find('.post-description').text().toLowerCase().replace(/[^\w\s]/g, '');;
+                    if (title.includes(searchText) || description.includes(searchText)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                    });
+                });
+            });
         </script> 
     </body>
 </html>

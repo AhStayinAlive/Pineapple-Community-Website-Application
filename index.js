@@ -10,7 +10,7 @@ var mongoose = require('mongoose');
 var express = require('express');
 var app = express();
 
-mongoose.connect('mongodb+srv://kenivancheng:WBBcz7ZrU6WTgEU6@cluster0.tkhfcoa.mongodb.net/apdevDB?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect('mongodb://localhost/apdevDB');
 
 app.use('/stylesheets', express.static(__dirname + '/stylesheets'));
 app.use('/images', express.static(__dirname + '/images'));
@@ -102,6 +102,18 @@ hbs.registerHelper('edited', function(number) {
     }
 });
 
+hbs.registerHelper('upvotes', function(upvotes, username) {
+    if (upvotes.includes(username)) {
+        return username;
+    }
+});
+
+hbs.registerHelper('downvotes', function(downvotes, username) {
+    if (downvotes.includes(username)) {
+        return username;
+    }
+});
+
 //Session
 app.use(
     session({
@@ -114,7 +126,7 @@ app.use(
             maxAge: 3 * 7 * 24 * 60 * 60 * 1000
         },
         store: MongoStore.create({ 
-            mongoUrl: 'mongodb+srv://kenivancheng:WBBcz7ZrU6WTgEU6@cluster0.tkhfcoa.mongodb.net/apdevDB?retryWrites=true&w=majority&appName=Cluster0',
+            mongoUrl: 'mongodb://localhost/apdevDB',
             collectionName: 'sessions' 
         })
     })
@@ -346,8 +358,9 @@ app.post('/submit-edit-profile', async function(req, res) {
 app.get('/home', async function(req,res) {
     var posts = await Post.find({})
     var user = await User.findOne({ username: req.session.username })
+    var communities = await Community.find({})
     console.log(user)
-    res.render('home', { posts, user })
+    res.render('home', { posts, user, communities })
 });
 
 app.get('/post', async function(req, res) {
@@ -407,6 +420,61 @@ app.get('/register', async function(req, res) {
 
 app.get('/create-community', async function(req, res) {
     res.render('create-community');
+});
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                           //
+//                                      UPVOTES AND DOWNVOTES                                                //
+//                                                                                                           //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Upvote
+app.get('/upvote', async function(req, res) {
+    var post = await Post.findOne({ postId: req.query.postId })
+    var username = req.session.username
+
+    var indexInUpvotes = post.upvotes.indexOf(username);
+    var indexInDownvotes = post.downvotes.indexOf(username);
+
+    if (indexInUpvotes === -1 && indexInDownvotes === -1) {
+        // If username is not in post.upvotes[] nor in post.downvotes[]
+        post.upvotes.push(username);
+    } else if (indexInUpvotes !== -1) {
+        // If username is already in post.upvotes[]
+        post.upvotes.splice(indexInUpvotes, 1);
+    } else if (indexInDownvotes !== -1) {
+        // If username is already in post.downvotes[]
+        post.downvotes.splice(indexInDownvotes, 1);
+        post.upvotes.push(username);
+    }
+
+    await post.save();
+    res.redirect('/post?postId=' + req.query.postId)
+});
+
+// Downvote
+app.get('/downvote', async function(req, res) {
+    var post = await Post.findOne({ postId: req.query.postId })
+    var username = req.session.username
+
+    var indexInUpvotes = post.upvotes.indexOf(username);
+    var indexInDownvotes = post.downvotes.indexOf(username);
+
+    if (indexInUpvotes === -1 && indexInDownvotes === -1) {
+        // If username is not in post.upvotes[] nor in post.downvotes[]
+        post.downvotes.push(username);
+    } else if (indexInUpvotes !== -1) {
+        // If username is already in post.upvotes[]
+        post.upvotes.splice(indexInUpvotes, 1);
+        post.downvotes.push(username);
+    } else if (indexInDownvotes !== -1) {
+        // If username is already in post.downvotes[]
+        post.downvotes.splice(indexInDownvotes, 1);
+    }
+
+    await post.save();
+    res.redirect('/post?postId=' + req.query.postId)
 });
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

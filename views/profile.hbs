@@ -21,13 +21,6 @@
             </div>
 
             <div class="actions-container">
-                <div class="search-bar">
-                    <form>
-                        <input class="search" type="text" name="search" placeholder="Search"/>
-                        <button type="submit"><i class="fa fa-search" aria-hidden="true"></i></button>
-                    </form>
-                </div>
-                
                 <div class="action-buttons">
                     <ul class="actions">
                         <li class="profile">
@@ -70,19 +63,13 @@
                     {{#each (reverse posts)}}
                     <div class="flex post-container post">
                         <div class="flex post-content">
-                            <div class="flex column no-padding margin">
-                                <button class="button"><span class="material-symbols-outlined">arrow_upward</span></button>
-                                <p class="flex center no-margin">{{calculateVotes upvotes downvotes}}</p>
-                                <button class="button"><span class="material-symbols-outlined">arrow_downward</span></button>
-                            </div>
                             <div class="post-text no-bottom">
                                 <div class="flex post-info">
-                                    <span class="material-symbols-outlined community-image">image</span>
                                     <span class="community"><a href="community?community={{removeFirst community}}">{{community}}</a> •</span>
                                     <span class="small">by <a href="profile">{{user}}</a> on {{date}}</span>
                                 </div>
-                                <a href="post?postId={{postId}}"><h2 class="margin no-sides no-bottom">{{title}}</h2></a>
-                                <p class="light">{{postcontent}}</p>
+                                <a href="post?postId={{postId}}"><h2 class="margin no-sides no-bottom post-title">{{title}}</h2></a>
+                                <p class="light post-description">{{postcontent}}</p>
                                 <div class="flex no-padding">
                                     <div class="flex">
                                         <a href="post?postId={{postId}}"><button class="button sides"><span class="material-symbols-outlined">mode_comment</span>View Thread</button></a>
@@ -96,8 +83,6 @@
                     {{#each (reverse comments)}}
                     <div class="flex post-container comment">
                         <div class="flex post-content">
-                            <div class="flex column no-padding margin">
-                            </div>
                             <div class="post-text no-bottom">
                                 <div class="flex post-info">
                                     <span class="material-symbols-outlined community-image">forum</span>
