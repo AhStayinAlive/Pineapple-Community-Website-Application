@@ -10,7 +10,7 @@ var mongoose = require('mongoose');
 var express = require('express');
 var app = express();
 
-mongoose.connect('mongodb+srv://kenivancheng:WBBcz7ZrU6WTgEU6@cluster0.tkhfcoa.mongodb.net/apdevDB?retryWrites=true&w=majority&appName=Cluster0');
+mongoose.connect('mongodb://localhost/apdevDB');
 
 app.use('/stylesheets', express.static(__dirname + '/stylesheets'));
 app.use('/images', express.static(__dirname + '/images'));
@@ -126,7 +126,7 @@ app.use(
             maxAge: 3 * 7 * 24 * 60 * 60 * 1000
         },
         store: MongoStore.create({ 
-            mongoUrl: 'mongodb+srv://kenivancheng:WBBcz7ZrU6WTgEU6@cluster0.tkhfcoa.mongodb.net/apdevDB?retryWrites=true&w=majority&appName=Cluster0',
+            mongoUrl: 'mongodb://localhost/apdevDB',
             collectionName: 'sessions' 
         })
     })
@@ -159,6 +159,20 @@ app.get('/', async function(req, res) {
     } else {
         res.render('index');
     }
+});
+
+const guest = new User({
+    username: '!!',
+    img: 'profile.jpg',
+    description: 'This is a guest user.',
+    userSince: 0, 
+    password: '!!' 
+});
+
+app.get('/guest', async function(req, res) {
+    req.session.username = '!!'
+    req.session.cookie.expires = false
+    res.redirect('home')
 });
 
 app.get('/logout', async function(req, res) {
@@ -225,28 +239,32 @@ app.post('/submit-user', async function(req, res) {
 
 // Create comment
 app.post('/submit-comment', async function(req, res) {
-    var today = new Date();
-    var formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
-
-    var latestComment = await Comment.findOne().sort({ commentId: -1 });
-    var newCommentId = latestComment ? latestComment.commentId + 1 : 1;
-
     var postId = Number(req.query.postId);
-    var parentId = req.query.parentId ? Number(req.query.parentId) : null; 
+    if (req.session.username !== '!!') { 
+        var today = new Date();
+        var formattedDate = `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
 
-    var level = parentId ? await calculateCommentLevel(parentId) + 1 : 0; 
+        var latestComment = await Comment.findOne().sort({ commentId: -1 });
+        var newCommentId = latestComment ? latestComment.commentId + 1 : 1;
+        
+        var parentId = req.query.parentId ? Number(req.query.parentId) : null; 
 
-    await Comment.create({
-        commentId: newCommentId,
-        date: formattedDate,
-        user: req.session.username,
-        postId: postId,
-        parentId: parentId,
-        level: level, 
-        edited: 0,
-        ...req.body,
-    });
-    res.redirect('/post?postId=' + postId);
+        var level = parentId ? await calculateCommentLevel(parentId) + 1 : 0; 
+
+        await Comment.create({
+            commentId: newCommentId,
+            date: formattedDate,
+            user: req.session.username,
+            postId: postId,
+            parentId: parentId,
+            level: level, 
+            edited: 0,
+            ...req.body,
+        });
+        res.redirect('/post?postId=' + postId);
+    } else {
+        res.redirect('/post?postId=' + postId)
+    }
 });
 
 async function calculateCommentLevel(commentId) {
@@ -356,44 +374,57 @@ app.post('/submit-edit-profile', async function(req, res) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 app.get('/home', async function(req,res) {
-    var posts = await Post.find({})
-    var user = await User.findOne({ username: req.session.username })
     var communities = await Community.find({})
-    console.log(user)
-    res.render('home', { posts, user, communities })
+    if (req.session.username !== '!!') {
+        var posts = await Post.find({})
+        var user = await User.findOne({ username: req.session.username })
+        console.log(user)
+        res.render('home', { posts, user, communities })
+    } else {
+        var posts = await Post.find({}).sort({ createdAt: -1 }).limit(20);
+        var user = guest
+        res.render('home', { posts, user, communities })
+    }
 });
 
 app.get('/post', async function(req, res) {
     var postId = Number(req.query.postId)
-    console.log('postId: ' + postId)
     var post = await Post.findOne({ postId: postId })
     var comments = await Comment.find({ postId: postId })
     
-    // Sort comments
     comments = sortComments(comments);
 
-    var user = await User.findOne({ username: req.session.username })
+    if (req.session.username !== '!!') { 
+        var user = await User.findOne({ username: req.session.username })
+    } else {
+        var user = guest
+    }
     res.render('post', { post, comments, user })
 });
 
 app.get('/create-post', async function(req, res) {
-    var communities = await Community.find({})
-    var user = await User.findOne({ username: req.session.username })
-    res.render('create-post', { communities, user })
+    if (req.session.username !== '!!') { 
+        var communities = await Community.find({})
+        var user = await User.findOne({ username: req.session.username })
+        res.render('create-post', { communities, user })
+    }
 });
 
-app.get('/profile', async function(req, res) { // !!
+app.get('/profile', async function(req, res) {
     var username
     if (req.query.username) {
         username = req.query.username
-    } else {
+    } else if (req.session.username !== '!!') {
         username = req.session.username
+    } else {
+        return
     }
     console.log('username: ' + username)
     var posts = await Post.find({ user: username })
     var comments = await Comment.find({ user: username })
     var user = await User.findOne({ username: username })
     res.render('profile', { posts, comments, user })
+
 });
 
 app.get('/community', async function(req, res) {
@@ -419,9 +450,10 @@ app.get('/register', async function(req, res) {
 });
 
 app.get('/create-community', async function(req, res) {
-    res.render('create-community');
+    if (req.session.username !== '!!') { 
+        res.render('create-community');
+    }
 });
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                           //
@@ -431,50 +463,54 @@ app.get('/create-community', async function(req, res) {
 
 // Upvote
 app.get('/upvote', async function(req, res) {
-    var post = await Post.findOne({ postId: req.query.postId })
-    var username = req.session.username
+    if (req.session.username !== '!!') { 
+        var post = await Post.findOne({ postId: req.query.postId })
+        var username = req.session.username
 
-    var indexInUpvotes = post.upvotes.indexOf(username);
-    var indexInDownvotes = post.downvotes.indexOf(username);
+        var indexInUpvotes = post.upvotes.indexOf(username);
+        var indexInDownvotes = post.downvotes.indexOf(username);
 
-    if (indexInUpvotes === -1 && indexInDownvotes === -1) {
-        // If username is not in post.upvotes[] nor in post.downvotes[]
-        post.upvotes.push(username);
-    } else if (indexInUpvotes !== -1) {
-        // If username is already in post.upvotes[]
-        post.upvotes.splice(indexInUpvotes, 1);
-    } else if (indexInDownvotes !== -1) {
-        // If username is already in post.downvotes[]
-        post.downvotes.splice(indexInDownvotes, 1);
-        post.upvotes.push(username);
+        if (indexInUpvotes === -1 && indexInDownvotes === -1) {
+            // If username is not in post.upvotes[] nor in post.downvotes[]
+            post.upvotes.push(username);
+        } else if (indexInUpvotes !== -1) {
+            // If username is already in post.upvotes[]
+            post.upvotes.splice(indexInUpvotes, 1);
+        } else if (indexInDownvotes !== -1) {
+            // If username is already in post.downvotes[]
+            post.downvotes.splice(indexInDownvotes, 1);
+            post.upvotes.push(username);
+        }
+
+        await post.save();
+        res.redirect('/post?postId=' + req.query.postId)
     }
-
-    await post.save();
-    res.redirect('/post?postId=' + req.query.postId)
 });
 
 // Downvote
 app.get('/downvote', async function(req, res) {
-    var post = await Post.findOne({ postId: req.query.postId })
-    var username = req.session.username
+    if (req.session.username !== '!!') { 
+        var post = await Post.findOne({ postId: req.query.postId })
+        var username = req.session.username
 
-    var indexInUpvotes = post.upvotes.indexOf(username);
-    var indexInDownvotes = post.downvotes.indexOf(username);
+        var indexInUpvotes = post.upvotes.indexOf(username);
+        var indexInDownvotes = post.downvotes.indexOf(username);
 
-    if (indexInUpvotes === -1 && indexInDownvotes === -1) {
-        // If username is not in post.upvotes[] nor in post.downvotes[]
-        post.downvotes.push(username);
-    } else if (indexInUpvotes !== -1) {
-        // If username is already in post.upvotes[]
-        post.upvotes.splice(indexInUpvotes, 1);
-        post.downvotes.push(username);
-    } else if (indexInDownvotes !== -1) {
-        // If username is already in post.downvotes[]
-        post.downvotes.splice(indexInDownvotes, 1);
+        if (indexInUpvotes === -1 && indexInDownvotes === -1) {
+            // If username is not in post.upvotes[] nor in post.downvotes[]
+            post.downvotes.push(username);
+        } else if (indexInUpvotes !== -1) {
+            // If username is already in post.upvotes[]
+            post.upvotes.splice(indexInUpvotes, 1);
+            post.downvotes.push(username);
+        } else if (indexInDownvotes !== -1) {
+            // If username is already in post.downvotes[]
+            post.downvotes.splice(indexInDownvotes, 1);
+        }
+
+        await post.save();
+        res.redirect('/post?postId=' + req.query.postId)
     }
-
-    await post.save();
-    res.redirect('/post?postId=' + req.query.postId)
 });
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
