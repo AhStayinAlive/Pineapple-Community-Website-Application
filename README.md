@@ -9,7 +9,6 @@ Members:
 
 
 About:
-This is a course final output in the subject CCAPDEV where we are tasked to create a web application.
 This website simulates an online forum similar to reddit and twitter and is called Pineapple. 
 Posts are only text posts, no pictures can be attached unless its for the profile picture.
 
@@ -32,5 +31,4 @@ Features:
     - Edit Profile
     - Register and Login
 
-CHANGELOG:    *ALL CHANGES MADE AFTER SUBMISSION*
-  Added Search, Upvote & Downvote, Edit Profile, Filter.
+
